@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Update Form</h1>
+
+<a href="{% url 'forms:view_form' pk %}" target="_blank"><button>Share</button></a>
+<a href="{% url 'forms:responses' pk %}"><button>Responses</button></a>
+    
+<form action="{% url 'forms:update_form' pk %}" method="post" id='questionForm'>
+    {% csrf_token %}
+    <Button type='submit'>Save</Button>
+
+    <div class="card" id='form-description'>
+        <div class="card-header">
+            Title and Description
+        </div>
+        <div class="card-body">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="title" placeholder="title" name='title'>
+                <label for="title">Form Title</label>
+            </div>
+            <div class="form-floating">
+                <textarea class="form-control" placeholder="Description" id="description"
+                    name='description'></textarea>
+                <label for="description">Form Description</label>
+            </div>
+        </div>
+        <button type='button' id='addQuestion'>Add Question</button>
+    </div>
+
+
+{% endblock content %}
+
+{% block script %}
+    <script src="{% static 'forms.js' %}"></script>
+
+    <script>
+    
+        let children = form.children
+        children[2].querySelector('[name=title]').value = "{{form.form_data.title|escapejs}}"
+        children[2].querySelector('[name=description]').value = "{{form.form_data.description|escapejs}}"
+
+
+        {% if form.form_data.data %}
+        
+            let addQuestionButtonId = 'addQuestion';
+            let addOptionButtonId, question,option_id;
+            let i=0;
+
+            {% with form.form_data.data as questions %}
+
+                {% for questionId, questionData in questions.items %}
+                
+                    i = {{forloop.counter0|escapejs}}+3;
+                    [addQuestionButtonId, addOptionButtonId] = addQuestion(addQuestionButtonId, false);
+
+                    children[i].querySelector('.question').value = "{{questionData.questionText|escapejs}}";
+
+                    {% for option in questionData.options %}
+                    
+                        option_id = addOption(addOptionButtonId);
+                        all_opt = children[i].querySelector('.allOptions').children;
+                        all_opt[all_opt.length-1].querySelector(`#${option_id}`).value = '{{option}}';
+
+                    {% endfor %}
+
+                {% endfor %}
+            
+            {% endwith %}
+
+        {% endif %}
+
+
+    </script>
+
+{% endblock script %}
